@@ -6,7 +6,11 @@ A booking and finance dashboard for holiday apartments.
 
 Tracks bookings, money and housekeeping for our holiday apartments in Sri Lanka across Booking.com, Airbnb, Agoda and direct bookings.
 
-Full requirements: [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md)
+## Documents
+
+- [Requirements](docs/REQUIREMENTS.md)
+- [Implementation plan](docs/IMPLEMENTATION_PLAN.md): architecture, data model, diagrams, phases
+- [CRUD operations](docs/CRUD_OPERATIONS.md): every create/read/update/delete with permissions
 
 ## Project structure
 
