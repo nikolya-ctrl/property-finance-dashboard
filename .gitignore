@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+
+# Build output
+dist/
+build/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Real financial / tenant data
+data/private/
+*.xlsx
+*.csv
+!data/sample*.csv
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

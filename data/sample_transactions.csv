@@ -1,0 +1,6 @@
+date,property,unit,category,type,amount
+2026-11-01,Maple Court,1A,Rent,income,1200
+2026-11-01,Maple Court,1B,Rent,income,1150
+2026-11-03,Maple Court,,Maintenance,expense,-240
+2026-11-05,Oak House,2,Rent,income,1500
+2026-11-10,Oak House,,Insurance,expense,-180
