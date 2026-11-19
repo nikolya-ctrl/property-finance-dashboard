@@ -1,15 +1,12 @@
-# Property Management Finance Dashboard
+# Property Finance Dashboard
 
-A dashboard for tracking the finances of a property portfolio.
+A booking and finance dashboard for holiday apartments.
 
-## Planned features
+## What it does
 
-- **Portfolio overview** – total rent collected, expenses, net operating income (NOI), occupancy rate
-- **Rent tracking** – rent due vs. paid per unit, overdue tenants, payment history
-- **Expenses** – maintenance, utilities, taxes, insurance, management fees, by property and category
-- **Cash flow** – monthly income vs. expenses, trends over time
-- **Property breakdown** – per-property profit/loss and ROI
-- **Reports** – export monthly/annual summaries (CSV/PDF)
+Tracks bookings, money and housekeeping for our holiday apartments in Sri Lanka across Booking.com, Airbnb, Agoda and direct bookings.
+
+Full requirements: [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md)
 
 ## Project structure
 
@@ -21,4 +18,4 @@ docs/   notes and design docs
 
 ## Getting started
 
-_Tech stack to be decided._
+Stack: Next.js + Supabase + Resend (see requirements).
