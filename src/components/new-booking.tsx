@@ -5,13 +5,13 @@ import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import { CHANNELS, PROPERTIES, channelById, iso, propertyById, today, type Booking, type ChannelId } from "@/lib/mock-data";
-import { cn, fmtLKR, fmtUSD, toLKR } from "@/lib/utils";
+import { CHANNELS, PROPERTIES, channelById, iso, propertyById, today, type ChannelId } from "@/lib/data";
+import { USD_LKR, cn, fmtLKR, fmtUSD } from "@/lib/utils";
 import { Button, Drawer, Field, inputCls } from "./ui";
 
 const empty = () => ({
-  propertyId: "kandy",
-  channel: "booking" as ChannelId,
+  propertyId: PROPERTIES.find((p) => p.status === "operating")?.id ?? "",
+  channel: (CHANNELS.find((c) => c.isDirect)?.id ?? CHANNELS[0]?.id ?? "") as ChannelId,
   checkIn: iso(addDays(today(), 7)),
   checkOut: iso(addDays(today(), 10)),
   name: "",
@@ -32,11 +32,14 @@ export function NewBookingDrawer() {
   const { user } = useAuth();
   const [f, setF] = useState(empty);
   const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (newBookingOpen) {
       setF(empty());
       setSaved(false);
+      setErr(null);
     }
   }, [newBookingOpen]);
 
@@ -58,35 +61,36 @@ export function NewBookingDrawer() {
 
   const channel = channelById(f.channel);
   const grossNum = Number(f.gross) || 0;
-  const grossLKR = toLKR(grossNum, f.currency);
+  const grossLKR = f.currency === "USD" ? grossNum * USD_LKR : grossNum;
   const commission = Math.round((grossLKR * channel.commission) / 100);
   const isOwner = user?.role === "owner";
-  const valid = f.name.trim() && nights > 0 && !clash && grossNum > 0;
+  const valid = f.name.trim() && f.propertyId && f.channel && nights > 0 && !clash && grossNum > 0;
 
-  const save = () => {
-    const n = 2000 + bookings.length;
-    const b: Booking = {
-      id: `new${n}`,
-      ref: `HV-${n}`,
+  const save = async () => {
+    setBusy(true);
+    setErr(null);
+    const e = await addBooking({
       propertyId: f.propertyId,
       channel: f.channel,
-      guest: { name: f.name.trim(), country: f.country || "—", flag: "🏳️", phone: f.phone, email: "" },
-      adults: f.adults,
-      children: f.children,
       checkIn: f.checkIn,
       checkOut: f.checkOut,
+      guest: { name: f.name.trim(), phone: f.phone.trim(), country: f.country.trim() },
+      adults: f.adults,
+      children: f.children,
       arrival: f.arrival,
       pickup: f.pickup,
-      status: "confirmed",
       currency: f.currency,
       gross: grossNum,
+      fx: USD_LKR,
       commissionPct: channel.commission,
-      extras: [],
-      paid: Number(f.deposit) || 0,
-      payout: f.channel === "direct" ? "n/a" : "pending",
-      notes: f.notes || undefined,
-    };
-    addBooking(b);
+      deposit: channel.isDirect ? Number(f.deposit) || 0 : 0,
+      notes: f.notes.trim(),
+    });
+    setBusy(false);
+    if (e) {
+      setErr(e);
+      return;
+    }
     setSaved(true);
     setTimeout(() => setNewBookingOpen(false), 900);
   };
@@ -99,12 +103,12 @@ export function NewBookingDrawer() {
       subtitle="Add a stay from any platform or a direct enquiry."
       footer={
         <div className="flex items-center justify-between gap-3">
-          <span className="text-xs text-neutral-400 font-medium">Demo only, nothing is saved</span>
+          <span className="text-xs text-red-600 font-medium">{err}</span>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => setNewBookingOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={save} disabled={!valid || saved}>
+            <Button onClick={save} disabled={!valid || saved || busy}>
               {saved ? (
                 <>
                   <CheckCircle2 className="w-4 h-4" /> Saved
@@ -218,7 +222,7 @@ export function NewBookingDrawer() {
               <input type="number" min={0} className={inputCls} placeholder="0" value={f.gross} onChange={(e) => set("gross", e.target.value)} />
             </Field>
           </div>
-          {f.channel === "direct" && (
+          {channel.isDirect && (
             <Field label="Deposit received (LKR)">
               <input type="number" min={0} className={inputCls} placeholder="0" value={f.deposit} onChange={(e) => set("deposit", e.target.value)} />
             </Field>

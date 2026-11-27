@@ -1,65 +1,95 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { supabase } from "./supabase";
 
 export type Role = "owner" | "staff";
-export type User = { name: string; email: string; role: Role; title: string };
-
-/**
- * DEMO ONLY: UI prototype with no backend.
- * These test accounts are hard-coded and must be replaced by Supabase Auth.
- */
-const DEMO_USERS: (User & { password: string })[] = [
-  { name: "Ayesha Fernando", email: "owner@haven.test", password: "owner123", role: "owner", title: "Owner" },
-  { name: "Nimal Perera", email: "staff@haven.test", password: "staff123", role: "staff", title: "Caretaker · Kandy" },
-];
-
-export const DEMO_LOGINS = DEMO_USERS.map(({ email, password, role }) => ({ email, password, role }));
-
-const KEY = "haven.demo.session";
+export type User = { id: string; name: string; email: string; role: Role; title: string; active: boolean };
 
 type AuthCtx = {
   user: User | null;
   ready: boolean;
-  login: (email: string, password: string) => string | null;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<string | null>;
+  sendLink: (email: string) => Promise<string | null>;
+  setPassword: (password: string) => Promise<string | null>;
+  logout: () => Promise<void>;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
+
+async function loadUser(session: Session | null): Promise<User | null> {
+  if (!session) return null;
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name, role, title, active")
+    .eq("id", session.user.id)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    id: data.id,
+    name: data.full_name || session.user.email || "",
+    email: session.user.email ?? "",
+    role: data.role as Role,
+    title: data.title || (data.role === "owner" ? "Owner" : "Staff"),
+    active: data.active,
+  };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setUser(JSON.parse(raw));
-    } catch {}
-    setReady(true);
+    let alive = true;
+    supabase.auth.getSession().then(async ({ data }) => {
+      const u = await loadUser(data.session);
+      if (alive) {
+        setUser(u);
+        setReady(true);
+      }
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Defer the profile query so it doesn't run inside the auth callback lock.
+      setTimeout(async () => {
+        const u = await loadUser(session);
+        if (alive) {
+          setUser(u);
+          setReady(true);
+        }
+      }, 0);
+    });
+    return () => {
+      alive = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
-  const login = useCallback((email: string, password: string) => {
-    const match = DEMO_USERS.find(
-      (u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.password === password
-    );
-    if (!match) return "That email and password don't match a demo account.";
-    const { password: _pw, ...u } = match;
-    setUser(u);
-    try {
-      localStorage.setItem(KEY, JSON.stringify(u));
-    } catch {}
+  const login = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) return error.message === "Invalid login credentials" ? "That email and password don't match." : error.message;
     return null;
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    try {
-      localStorage.removeItem(KEY);
-    } catch {}
+  const sendLink = useCallback(async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+    });
+    return error ? error.message : null;
   }, []);
 
-  return <Ctx.Provider value={{ user, ready, login, logout }}>{children}</Ctx.Provider>;
+  const setPassword = useCallback(async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    return error ? error.message : null;
+  }, []);
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  }, []);
+
+  return <Ctx.Provider value={{ user, ready, login, sendLink, setPassword, logout }}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {

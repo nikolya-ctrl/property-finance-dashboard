@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import { cn, fmtLKR, fmtUSD } from "@/lib/utils";
-import { channelById, type ChannelId, type BookingStatus } from "@/lib/mock-data";
+import { channelById, type ChannelId, type BookingStatus } from "@/lib/data";
 
 export function PageHeader({
   title,
@@ -97,6 +97,7 @@ const STATUS: Record<BookingStatus, { label: string; tone: keyof typeof TONES }>
   checked_in: { label: "Staying", tone: "green" },
   completed: { label: "Completed", tone: "neutral" },
   cancelled: { label: "Cancelled", tone: "red" },
+  no_show: { label: "No-show", tone: "amber" },
 };
 
 export function StatusBadge({ status }: { status: BookingStatus }) {

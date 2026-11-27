@@ -79,6 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [ready, user, router]);
 
   if (!ready || !user) return null;
+  if (!user.active) return <PendingAccess />;
 
   return (
     <StoreProvider>
@@ -91,7 +92,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
-  const { setNewBookingOpen } = useStore();
+  const { setNewBookingOpen, loading, error } = useStore();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const isOwner = user!.role === "owner";
@@ -110,8 +111,8 @@ function Shell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => setMobileOpen(false), [pathname]);
 
-  const signOut = () => {
-    logout();
+  const signOut = async () => {
+    await logout();
     router.replace("/login");
   };
 
@@ -127,7 +128,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className={cn("h-16 flex items-center border-b border-neutral-100 shrink-0", collapsed ? "justify-center" : "justify-between px-6")}>
           {!collapsed && (
             <Link href="/dashboard" className="text-lg font-bold tracking-[0.3em] text-ink">
-              HAVEN
+              HILTONIA
             </Link>
           )}
           <button
@@ -235,7 +236,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       {/* Mobile header */}
       <div className="md:hidden fixed top-0 inset-x-0 h-16 bg-white/90 backdrop-blur-md border-b border-neutral-100 z-50 flex items-center justify-between px-4">
         <Link href="/dashboard" className="text-base font-bold tracking-[0.3em] text-ink">
-          HAVEN
+          HILTONIA
         </Link>
         <div className="flex items-center gap-1">
           <button
@@ -272,7 +273,12 @@ function Shell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <div className="flex-1 w-full max-w-[1200px] mx-auto px-5 py-8 sm:px-8 md:px-10 md:py-12">{children}</div>
+        <div className="flex-1 w-full max-w-[1200px] mx-auto px-5 py-8 sm:px-8 md:px-10 md:py-12">
+          {error && (
+            <div className="mb-6 p-3.5 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 font-medium">{error}</div>
+          )}
+          {loading ? <p className="text-sm text-neutral-400 font-medium">Loading…</p> : children}
+        </div>
       </main>
 
       {/* Mobile bottom nav */}
@@ -341,6 +347,31 @@ function Shell({ children }: { children: React.ReactNode }) {
       )}
 
       <NewBookingDrawer />
+    </div>
+  );
+}
+
+function PendingAccess() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  return (
+    <div className="min-h-dvh flex items-center justify-center p-6 text-ink">
+      <div className="max-w-sm text-center space-y-3">
+        <div className="text-xl font-bold tracking-[0.3em] mb-6">HILTONIA</div>
+        <h1 className="text-lg font-bold">Waiting for access</h1>
+        <p className="text-sm text-neutral-500 font-medium">
+          {user?.email} isn&apos;t invited yet. Ask an owner to invite this email in Settings, then sign in again.
+        </p>
+        <button
+          onClick={async () => {
+            await logout();
+            router.replace("/login");
+          }}
+          className="text-sm font-semibold underline"
+        >
+          Sign out
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { addDays, differenceInCalendarDays, endOfMonth, format, max, min, parseISO, startOfMonth, subMonths } from "date-fns";
-import { bookingMoney, PROPERTIES, type Booking, type Expense } from "./mock-data";
+import { bookingMoney, PROPERTIES, type Booking, type Expense } from "./data";
 
 const counts = (b: Booking) => b.status !== "cancelled" && b.status !== "enquiry";
 

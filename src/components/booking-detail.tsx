@@ -4,7 +4,7 @@ import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import { Car, Clock, Mail, MapPin, MessageCircle, Moon, Phone, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { bookingMoney, channelById, propertyById, type Booking } from "@/lib/mock-data";
+import { bookingMoney, channelById, propertyById, type Booking } from "@/lib/data";
 import { fmtLKR, fmtUSD } from "@/lib/utils";
 import { Badge, Button, ChannelTag, Drawer, StatusBadge } from "./ui";
 

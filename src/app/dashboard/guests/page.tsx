@@ -5,7 +5,7 @@ import { format, parseISO } from "date-fns";
 import { Search, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { bookingMoney, type Booking } from "@/lib/mock-data";
+import { bookingMoney, type Booking } from "@/lib/data";
 import { cn, fmtLKR } from "@/lib/utils";
 import { Avatar, Badge, Empty, PageHeader, inputCls } from "@/components/ui";
 import { BookingDetail } from "@/components/booking-detail";

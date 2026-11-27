@@ -12,34 +12,41 @@ Tracks bookings, money and housekeeping for our holiday apartments in Sri Lanka 
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md): architecture, data model, diagrams, phases
 - [CRUD operations](docs/CRUD_OPERATIONS.md): every create/read/update/delete with permissions
 
-## Run the UI prototype
+## Run it
 
-The app in `src/` is a **UI-only prototype**: there's no database, all data is made-up demo data, and changes reset when you reload.
+The app talks to the Supabase project **hiltonia-dashboard** (Mumbai). All data is saved there and protected by Row Level Security.
 
 ```bash
+cp .env.example .env.local   # then fill in the project URL and publishable key
 pnpm install
 pnpm dev
 ```
 
 Open http://localhost:3100
 
-### Demo logins
+### Signing in
 
-| Role | Email | Password | Sees |
-|---|---|---|---|
-| Owner | `owner@haven.test` | `owner123` | Everything: money, reports, settings |
-| Staff | `staff@haven.test` | `staff123` | Bookings, calendar, operations, own expenses. No profit, reports or settings |
+Access is **invite-only**. The first owner is already invited. On the login page, enter the invited email and click **Email me a sign-in link**, then set a password under **Settings → Account**.
+Owners invite more people from **Settings → Team**. Anyone who signs up without an invite gets an account with no access.
 
-These are hard-coded test accounts for the prototype only (`src/lib/auth.tsx`). They'll be replaced by Supabase Auth.
+| Role | Sees |
+|---|---|
+| Owner | Everything: money, reports, settings |
+| Staff | Bookings, calendar, operations, own expenses. No prices, profit, reports or settings |
 
-### Screens
+### Database
 
-Today · Calendar · Bookings (with New booking form and double-booking check) · Guests · Expenses · Operations (cleaning, maintenance, inventory) · Reports · Settings
+Migrations live in `supabase/migrations/` and are already applied to the live project.
+
+- Double bookings are blocked by the database (check-out day is free for the next guest).
+- A cleaning task is created automatically for every check-out.
+- Income is counted on stay dates; shared costs show as "General".
 
 ## Project structure
 
 ```
-src/    Next.js app (UI prototype)
+src/       Next.js app
+supabase/  database migrations
 data/   sample data (never commit real tenant or bank data)
 docs/   notes and design docs
 ```

@@ -5,7 +5,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { startOfMonth, subMonths, addDays, endOfMonth } from "date-fns";
 import { Download } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { CHANNELS, PROPERTIES, bookingMoney } from "@/lib/mock-data";
+import { CHANNELS, PROPERTIES, bookingMoney } from "@/lib/data";
 import { lastMonths, monthStats, nightsIn } from "@/lib/metrics";
 import { cn, fmtLKR, fmtLKRShort, fmtUSD } from "@/lib/utils";
 import { Button, Card, PageHeader, SectionTitle, Segmented, Stat } from "@/components/ui";

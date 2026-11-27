@@ -10,7 +10,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Haven · Stays Dashboard",
+  title: "Hiltonia · Stays Dashboard",
   description: "Bookings, money and housekeeping for our holiday apartments.",
 };
 

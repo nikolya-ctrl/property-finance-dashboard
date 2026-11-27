@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { bookingMoney, iso, PROPERTIES, propertyById, today, type Booking } from "@/lib/mock-data";
+import { bookingMoney, iso, PROPERTIES, propertyById, today, type Booking } from "@/lib/data";
 import { monthStats } from "@/lib/metrics";
 import { cn, fmtLKR, fmtLKRShort, fmtUSD } from "@/lib/utils";
 import { Avatar, Badge, Button, Card, ChannelTag, SectionTitle, Stat } from "@/components/ui";

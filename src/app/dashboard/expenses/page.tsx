@@ -5,7 +5,7 @@ import { endOfMonth, format, parseISO, startOfMonth, subMonths } from "date-fns"
 import { Camera, CheckCircle2, Plus, Receipt } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { EXPENSE_CATEGORIES, PROPERTIES, iso, propertyById } from "@/lib/mock-data";
+import { EXPENSE_CATEGORIES, PROPERTIES, iso, propertyById } from "@/lib/data";
 import { cn, fmtLKR, fmtUSD } from "@/lib/utils";
 import { Button, Card, Drawer, Empty, Field, PageHeader, SectionTitle, inputCls } from "@/components/ui";
 
@@ -22,7 +22,7 @@ export default function ExpensesPage() {
   const to = iso(endOfMonth(month));
 
   // staff only see what they entered
-  const visible = expenses.filter((e) => isOwner || e.by === user!.name);
+  const visible = expenses.filter((e) => isOwner || e.byId === user!.id);
   const rows = visible.filter(
     (e) => e.date >= from && e.date <= to && (prop === "all" || (prop === "shared" ? e.propertyId === null : e.propertyId === prop))
   );
@@ -115,7 +115,7 @@ export default function ExpensesPage() {
       <AddExpense
         open={adding}
         onClose={() => setAdding(false)}
-        onSave={(e) => addExpense({ ...e, id: `x${Date.now()}`, by: user!.name })}
+        onSave={addExpense}
       />
     </div>
   );
@@ -128,10 +128,13 @@ function AddExpense({
 }: {
   open: boolean;
   onClose: () => void;
-  onSave: (e: { date: string; propertyId: string | null; category: string; note: string; amount: number }) => void;
+  onSave: (e: { date: string; propertyId: string | null; category: string; note: string; amount: number }) => Promise<string | null>;
 }) {
-  const [f, setF] = useState({ date: iso(new Date()), propertyId: "kandy", category: EXPENSE_CATEGORIES[5], note: "", amount: "" });
+  const firstProperty = PROPERTIES.find((p) => p.status === "operating")?.id ?? "shared";
+  const [f, setF] = useState({ date: iso(new Date()), propertyId: firstProperty, category: EXPENSE_CATEGORIES[0] ?? "Other", note: "", amount: "" });
   const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const valid = f.note.trim() && Number(f.amount) > 0;
 
   return (
@@ -144,9 +147,16 @@ function AddExpense({
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button
-            disabled={!valid || done}
-            onClick={() => {
-              onSave({ date: f.date, propertyId: f.propertyId === "shared" ? null : f.propertyId, category: f.category, note: f.note.trim(), amount: Number(f.amount) });
+            disabled={!valid || done || busy}
+            onClick={async () => {
+              setBusy(true);
+              setErr(null);
+              const e = await onSave({ date: f.date, propertyId: f.propertyId === "shared" ? null : f.propertyId, category: f.category, note: f.note.trim(), amount: Number(f.amount) });
+              setBusy(false);
+              if (e) {
+                setErr(e);
+                return;
+              }
               setDone(true);
               setTimeout(() => {
                 setDone(false);
@@ -161,6 +171,7 @@ function AddExpense({
       }
     >
       <div className="space-y-4">
+        {err && <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-medium">{err}</div>}
         <Field label="Amount (LKR)">
           <input type="number" min={0} className={cn(inputCls, "text-lg font-bold py-3")} placeholder="0" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} />
         </Field>
@@ -183,9 +194,9 @@ function AddExpense({
             <option value="shared">Shared (all apartments)</option>
           </select>
         </Field>
-        <button type="button" className="w-full mt-2 border border-dashed border-neutral-200 rounded-2xl py-8 flex flex-col items-center gap-2 text-neutral-400 hover:border-neutral-300 hover:text-neutral-600 transition-colors">
+        <button type="button" disabled title="Coming soon" className="w-full mt-2 opacity-60 cursor-not-allowed border border-dashed border-neutral-200 rounded-2xl py-8 flex flex-col items-center gap-2 text-neutral-400 hover:border-neutral-300 hover:text-neutral-600 transition-colors">
           <Camera className="w-5 h-5" />
-          <span className="text-xs font-semibold">Add receipt photo</span>
+          <span className="text-xs font-semibold">Receipt photos: coming soon</span>
         </button>
       </div>
     </Drawer>

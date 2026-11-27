@@ -5,8 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Demo exchange rate: 1 USD = 300 LKR */
-export const USD_LKR = 300;
+/** Display rate (LKR per USD). Updated from the latest saved exchange rate on sign-in. */
+export let USD_LKR = 300;
+export const setDisplayRate = (r: number) => {
+  if (r > 0) USD_LKR = r;
+};
 
 export const toLKR = (amount: number, currency: "LKR" | "USD") =>
   currency === "USD" ? amount * USD_LKR : amount;

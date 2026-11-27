@@ -5,7 +5,7 @@ import { format, parseISO, differenceInCalendarDays } from "date-fns";
 import { BedDouble, Plus, Search } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
-import { CHANNELS, PROPERTIES, bookingMoney, iso, propertyById, today, type Booking, type ChannelId } from "@/lib/mock-data";
+import { CHANNELS, PROPERTIES, bookingMoney, iso, propertyById, today, type Booking, type ChannelId } from "@/lib/data";
 import { cn, fmtLKR } from "@/lib/utils";
 import { Avatar, Badge, Button, ChannelTag, Empty, PageHeader, Segmented, StatusBadge, inputCls } from "@/components/ui";
 import { BookingDetail } from "@/components/booking-detail";

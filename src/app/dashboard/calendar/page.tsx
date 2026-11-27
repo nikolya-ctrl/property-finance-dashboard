@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { addMonths, differenceInCalendarDays, eachDayOfInterval, endOfMonth, format, isSameDay, isWeekend, parseISO, startOfMonth } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { CHANNELS, PROPERTIES, channelById, today, type Booking } from "@/lib/mock-data";
+import { CHANNELS, PROPERTIES, channelById, today, type Booking } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Button, PageHeader } from "@/components/ui";
 import { BookingDetail } from "@/components/booking-detail";
